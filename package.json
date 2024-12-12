@@ -1,0 +1,23 @@
+{
+  "name": "antgit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "type": "module",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AntoineMeunier52/antGit.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AntoineMeunier52/antGit/issues"
+  },
+  "homepage": "https://github.com/AntoineMeunier52/antGit#readme"
+}
