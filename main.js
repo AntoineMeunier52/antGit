@@ -1,12 +1,28 @@
 import fs from "fs";
 import path from "path";
 
+class Workspace {
+  constructor(pathName) {
+    this.pathName = pathName;
+    this.IGNORE = [".", "..", ".git"];
+  }
+
+  listFiles() {
+    return fs
+      .readdirSync(this.pathName)
+      .filter((files) => !this.IGNORE.includes(files));
+  }
+}
+
 const command = process.argv[2];
 const argument = process.argv.slice(3);
 
 switch (command) {
   case "init":
     cmdInit();
+    break;
+  case "commit":
+    cmdCommit();
     break;
   default:
     throw new Error(`command not found: ${command}`);
@@ -28,4 +44,15 @@ function cmdInit() {
   });
 
   console.log(`Initialized empty antGit repo in ${newRepoPath}`);
+}
+
+function cmdCommit() {
+  const root_path = path.join(process.cwd());
+  const git_path = path.join(process.cwd(), ".git");
+  const db_path = path.join(process.cwd(), ".git", "objects");
+
+  console.log(root_path);
+  const workplace = new Workspace(root_path);
+  console.log(workplace);
+  console.log(workplace.listFiles());
 }
