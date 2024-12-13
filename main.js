@@ -1,10 +1,14 @@
 import fs from "fs";
 import path from "path";
+import readlin from "readline";
+
 import Workspace from "./workplace.js";
 import Database from "./database.js";
 import Blob from "./blob.js";
 import Entry from "./entry.js";
 import Tree from "./tree.js";
+import Author from "./author.js";
+import Commit from "./commit.js";
 
 const command = process.argv[2];
 const argument = process.argv.slice(3);
@@ -56,8 +60,26 @@ function cmdCommit() {
   });
 
   const tree = new Tree(entries);
-
   database.store(tree);
 
-  console.log(`tree: ${tree.oid}`);
+  const name =
+    process.env.GIT_AUTHOR_NAME ||
+    (() => {
+      throw new Error("GIT_AUTHOR_NAME is required");
+    });
+  const email =
+    process.env.GIT_AUTHOR_EMAIL ||
+    (() => {
+      throw new Error("GIT_AUTHOR_EMAIL is required");
+    });
+
+  const author = new Author(name, email, new Date());
+  const message = fs.readFileSync(0, "utf-8");
+
+  const commit = new Commit(tree.oid, author, message);
+  database.store(commit);
+
+  fs.writeFileSync(path.join(git_path, "HEAD"), commit.oid);
+
+  console.log(`[(root-commit) ${commit.oid}] ${message.split("\n")[0]}`);
 }
