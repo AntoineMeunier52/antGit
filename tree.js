@@ -24,34 +24,7 @@ export default class Tree {
   }
 
   toStr() {
-    console.log("tree to STR():", this.entries);
-    const sortedEntries = this.entries.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-
-    // Formater chaque entrée
-    // const formattedEntries = sortedEntries.map((entry) => {
-    //   // Mode : 7 caractères ASCII remplis d'espaces
-    //   const modeBuffer = Buffer.from(
-    //     this.MODE.padEnd(this.ENTRY_FORMAT.modeLength, " "),
-    //     "ascii"
-    //   );
-
-    //   // Nom : UTF-8 suivi d'un caractère nul
-    //   const nameBuffer = Buffer.concat([
-    //     Buffer.from(entry.name, "utf-8"),
-    //     Buffer.from(this.ENTRY_FORMAT.nameTerminator, "ascii"),
-    //   ]);
-
-    //   // OID : 40 caractères hexadécimaux
-    //   const oidBuffer = Buffer.from(
-    //     entry.oid.slice(0, this.ENTRY_FORMAT.oidLength),
-    //     "hex"
-    //   );
-
-    //   // Concaténer les trois parties
-    //   return Buffer.concat([modeBuffer, nameBuffer, oidBuffer]);
-    // });
+    this.entries.sort((a, b) => a.name.localeCompare(b.name));
 
     const formattedEntries = this.entries.reduce((acc, current) => {
       const { name, oid } = current;
@@ -62,7 +35,7 @@ export default class Tree {
 
       return Buffer.concat([acc, entry]);
     }, Buffer.alloc(0));
-    console.log(formattedEntries);
+
     return formattedEntries;
   }
 }

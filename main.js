@@ -52,11 +52,11 @@ function cmdCommit() {
 
     database.store(blob);
 
-    console.log(pathDir, blob.oid);
     return new Entry(pathDir, blob.oid);
   });
 
   const tree = new Tree(entries);
+
   database.store(tree);
 
   console.log(`tree: ${tree.oid}`);
