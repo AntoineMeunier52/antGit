@@ -17,11 +17,11 @@ export default class Database {
 
   store(object) {
     const string = object.toStr().toString();
+    console.log("string:", string);
     const stringSize = Buffer.byteLength(object.toStr());
     const content = `${object.type()} ${stringSize}\0${string}`;
 
     object.oid = crypto.createHash("sha1").update(content).digest("hex");
-    console.log("content blob final form:", content, "oid:", object.oid);
     this.writeObject(object.oid, content);
   }
 
