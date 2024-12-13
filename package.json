@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/AntoineMeunier52/antGit/issues"
   },
-  "homepage": "https://github.com/AntoineMeunier52/antGit#readme"
+  "homepage": "https://github.com/AntoineMeunier52/antGit#readme",
+  "dependencies": {
+    "zlib": "^1.0.5"
+  }
 }

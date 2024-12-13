@@ -1,18 +1,8 @@
 import fs from "fs";
 import path from "path";
-
-class Workspace {
-  constructor(pathName) {
-    this.pathName = pathName;
-    this.IGNORE = [".", "..", ".git"];
-  }
-
-  listFiles() {
-    return fs
-      .readdirSync(this.pathName)
-      .filter((files) => !this.IGNORE.includes(files));
-  }
-}
+import Workspace from "./workplace.js";
+import Database from "./database.js";
+import Blob from "./blob.js";
 
 const command = process.argv[2];
 const argument = process.argv.slice(3);
@@ -30,7 +20,7 @@ switch (command) {
 
 function cmdInit() {
   let newRepoPath;
-  console.log(argument[0]);
+
   if (argument[0]) {
     newRepoPath = path.join(process.cwd(), argument[0], ".git");
   } else {
@@ -51,8 +41,13 @@ function cmdCommit() {
   const git_path = path.join(process.cwd(), ".git");
   const db_path = path.join(process.cwd(), ".git", "objects");
 
-  console.log(root_path);
-  const workplace = new Workspace(root_path);
-  console.log(workplace);
-  console.log(workplace.listFiles());
+  const workspace = new Workspace(root_path);
+  const database = new Database(db_path);
+
+  workspace.listFiles().forEach((pathDir) => {
+    let data = workspace.readFile(pathDir);
+    let blob = new Blob(data);
+
+    database.store(blob, pathDir);
+  });
 }
