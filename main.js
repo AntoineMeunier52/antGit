@@ -3,6 +3,8 @@ import path from "path";
 import Workspace from "./workplace.js";
 import Database from "./database.js";
 import Blob from "./blob.js";
+import Entry from "./entry.js";
+import Tree from "./tree.js";
 
 const command = process.argv[2];
 const argument = process.argv.slice(3);
@@ -44,10 +46,18 @@ function cmdCommit() {
   const workspace = new Workspace(root_path);
   const database = new Database(db_path);
 
-  workspace.listFiles().forEach((pathDir) => {
+  const entries = workspace.listFiles().map((pathDir) => {
     let data = workspace.readFile(pathDir);
     let blob = new Blob(data);
 
-    database.store(blob, pathDir);
+    database.store(blob);
+
+    return new Entry(pathDir, blob.oid);
   });
+
+  const tree = new Tree(entries);
+
+  database.store(tree);
+
+  console.log(`tree: ${tree.oid}`);
 }

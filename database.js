@@ -16,12 +16,12 @@ export default class Database {
   }
 
   store(object) {
-    const string = object.toStr().toString();
-    const stringSize = Buffer.byteLength(object.toStr());
-    const content = `${object.type()} ${stringSize}\0${string}`;
+    const content = Buffer.concat([
+      Buffer.from(`${object.type()} ${object.toStr().length}\0`),
+      object.toStr(),
+    ]);
 
     object.oid = crypto.createHash("sha1").update(content).digest("hex");
-    console.log("content blob final form:", content, "oid:", object.oid);
     this.writeObject(object.oid, content);
   }
 
