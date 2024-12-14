@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import readlin from "readline";
+import readline from "readline";
 
 import Workspace from "./workplace.js";
 import Database from "./database.js";
@@ -9,6 +9,7 @@ import Entry from "./entry.js";
 import Tree from "./tree.js";
 import Author from "./author.js";
 import Commit from "./commit.js";
+import Refs from "./refs.js";
 
 const command = process.argv[2];
 const argument = process.argv.slice(3);
@@ -49,6 +50,7 @@ function cmdCommit() {
 
   const workspace = new Workspace(root_path);
   const database = new Database(db_path);
+  const refs = new Refs(git_path);
 
   const entries = workspace.listFiles().map((pathDir) => {
     let data = workspace.readFile(pathDir);
@@ -62,6 +64,7 @@ function cmdCommit() {
   const tree = new Tree(entries);
   database.store(tree);
 
+  const parent = refs.readHead();
   const name =
     process.env.GIT_AUTHOR_NAME ||
     (() => {
@@ -76,10 +79,12 @@ function cmdCommit() {
   const author = new Author(name, email, new Date());
   const message = fs.readFileSync(0, "utf-8");
 
-  const commit = new Commit(tree.oid, author, message);
+  const commit = new Commit(parent, tree.oid, author, message);
   database.store(commit);
 
-  fs.writeFileSync(path.join(git_path, "HEAD"), commit.oid);
+  refs.updateHead(commit.oid);
 
-  console.log(`[(root-commit) ${commit.oid}] ${message.split("\n")[0]}`);
+  const isRoot = parent === undefined ? "(root-commit)" : "";
+
+  console.log(`[${isRoot} ${commit.oid}] ${message.split("\n")[0]}`);
 }

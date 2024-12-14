@@ -27,6 +27,8 @@ export default class Database {
 
   writeObject(oid, content) {
     const objectPath = path.join(this.pathName, oid.slice(0, 2), oid.slice(2));
+    if (fs.existsSync(objectPath)) return;
+
     const dirname = path.dirname(objectPath);
     const tempPath = path.join(dirname, this.generateTempName());
 
