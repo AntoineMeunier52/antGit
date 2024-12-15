@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 
-export default class Tree {
-  ENTRY_FORMAT = { modeLength: 7, nameTerminator: "\0", oidLength: 40 };
+import Entry from "./entry.js";
 
+export default class Tree {
   constructor() {
     this.entries = {};
   }
@@ -22,7 +22,7 @@ export default class Tree {
     entries = entries.sort((a, b) => a.name.localeCompare(b.name));
     const root = new Tree();
 
-    entries.array.forEach((entry) => {
+    entries.forEach((entry) => {
       let pathEn = entry.name.split(path.sep);
       let name = pathEn.pop();
       console.log("treeBuild:", pathEn, name, entry);
@@ -33,13 +33,28 @@ export default class Tree {
   }
 
   addEntry(pathEn, name, entry) {
-    if (!pathEn) {
+    if (pathEn.length === 0) {
       this.entries[name] = entry;
+      console.log("add entry tree if:", this.entries);
     } else {
       const tree =
         this.entries[pathEn[0]] || (this.entries[pathEn[0]] = new Tree());
+      console.log("add entry tree else:");
       tree.addEntry(pathEn.slice(1), name, entry);
     }
+  }
+
+  traverse(callback) {
+    for (const [name, entry] of Object.entries(this.entries)) {
+      if (entry instanceof Tree) {
+        entry.traverse(callback);
+      }
+      callback(this);
+    }
+  }
+
+  mode() {
+    return Entry.DIRECTORY_MODE;
   }
 
   type() {

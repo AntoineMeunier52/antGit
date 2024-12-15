@@ -54,7 +54,6 @@ function cmdCommit() {
   const database = new Database(db_path);
   const refs = new Refs(git_path);
 
-  console.log("ok", workspace.listFiles());
   const entries = workspace.listFiles().map((pathDir) => {
     let data = workspace.readFile(pathDir);
     let blob = new Blob(data);
@@ -62,11 +61,14 @@ function cmdCommit() {
     database.store(blob);
 
     let stat = workspace.statFile(pathDir);
-    console.log("into map for workspace path");
+
     return new Entry(pathDir, blob.oid, stat);
   });
 
   const root = Tree.build(entries);
+
+  console.log("after root tree build:", root);
+  //here all is ok
   root.traverse((tree) => database.store(tree));
   //const tree = new Tree(entries);
   //database.store(tree);

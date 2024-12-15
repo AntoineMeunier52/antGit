@@ -4,6 +4,7 @@ import path from "path";
 export default class Entry {
   static REGULAR_MODE = "100644";
   static EXECUTABLE_MODE = "100755";
+  static DIRECTORY_MODE = "40000";
 
   constructor(name, oid, stat) {
     this.name = name;
