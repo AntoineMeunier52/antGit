@@ -1,13 +1,14 @@
 import fs from "fs";
 import path from "path";
 
-export default class Tree {
-  constructor(entries) {
-    this.entries = entries;
-  }
+import Entry from "./entry.js";
 
-  ENTRY_FORMAT = { modeLength: 7, nameTerminator: "\0", oidLength: 40 };
-  MODE = "100644";
+export default class Tree {
+  ENTRY_FORMAT = "Z*H40";
+
+  constructor() {
+    this.entries = {};
+  }
 
   #oid = undefined;
 
@@ -19,23 +20,54 @@ export default class Tree {
     this.#oid = value;
   }
 
+  static build(entries) {
+    entries = entries.sort((a, b) => a.name.localeCompare(b.name));
+    const root = new Tree();
+
+    entries.forEach((entry) => {
+      let pathEn = entry.name.split(path.sep);
+      let name = pathEn.pop();
+      root.addEntry(pathEn, name, entry);
+    });
+
+    return root;
+  }
+
+  addEntry(pathEn, name, entry) {
+    if (pathEn.length === 0) {
+      this.entries[name] = entry;
+    } else {
+      const tree =
+        this.entries[pathEn[0]] || (this.entries[pathEn[0]] = new Tree());
+      tree.addEntry(pathEn.slice(1), name, entry);
+    }
+  }
+
+  traverse(callback) {
+    for (const [name, entry] of Object.entries(this.entries)) {
+      if (entry instanceof Tree) {
+        entry.traverse(callback);
+      }
+      callback(this);
+    }
+  }
+
+  mode() {
+    return Entry.DIRECTORY_MODE;
+  }
+
   type() {
     return "tree";
   }
 
   toStr() {
-    this.entries.sort((a, b) => a.name.localeCompare(b.name));
+    const entriesArray = Object.entries(this.entries);
+    const getEntries = entriesArray.map(([name, entry]) => {
+      const modeAndName = `${entry.mode()} ${name}\0`;
+      const oidBuffer = Buffer.from(entry.oid, "hex");
 
-    const formattedEntries = this.entries.reduce((acc, current) => {
-      const { name, oid } = current;
-      const entry = Buffer.concat([
-        Buffer.from(`${this.MODE} ${name}\0`, "utf-8"),
-        Buffer.from(oid, "hex"),
-      ]);
-
-      return Buffer.concat([acc, entry]);
-    }, Buffer.alloc(0));
-
-    return formattedEntries;
+      return Buffer.concat([Buffer.from(modeAndName, "utf-8"), oidBuffer]);
+    });
+    return Buffer.concat(getEntries);
   }
 }
