@@ -1,15 +1,17 @@
+#!/usr/bin/node
+
 import fs from "fs";
 import path from "path";
 import readline from "readline";
 
-import Workspace from "./workplace.js";
-import Database from "./database.js";
-import Blob from "./blob.js";
-import Entry from "./entry.js";
-import Tree from "./tree.js";
-import Author from "./author.js";
-import Commit from "./commit.js";
-import Refs from "./refs.js";
+import Workspace from "../workplace.js";
+import Database from "../database.js";
+import Blob from "../blob.js";
+import Entry from "../entry.js";
+import Tree from "../tree.js";
+import Author from "../author.js";
+import Commit from "../commit.js";
+import Refs from "../refs.js";
 
 const command = process.argv[2];
 const argument = process.argv.slice(3);
@@ -52,17 +54,22 @@ function cmdCommit() {
   const database = new Database(db_path);
   const refs = new Refs(git_path);
 
+  console.log("ok", workspace.listFiles());
   const entries = workspace.listFiles().map((pathDir) => {
     let data = workspace.readFile(pathDir);
     let blob = new Blob(data);
 
     database.store(blob);
 
-    return new Entry(pathDir, blob.oid);
+    let stat = workspace.statFile(pathDir);
+    console.log("into map for workspace path");
+    return new Entry(pathDir, blob.oid, stat);
   });
 
-  const tree = new Tree(entries);
-  database.store(tree);
+  const root = Tree.build(entries);
+  root.traverse((tree) => database.store(tree));
+  //const tree = new Tree(entries);
+  //database.store(tree);
 
   const parent = refs.readHead();
   const name =

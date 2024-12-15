@@ -2,9 +2,20 @@ import fs from "fs";
 import path from "path";
 
 export default class Entry {
-  constructor(name, oid) {
+  static REGULAR_MODE = "100644";
+  static EXECUTABLE_MODE = "100755";
+
+  constructor(name, oid, stat) {
     this.name = name;
     this.oid = oid;
+    this.stat = stat;
+  }
+
+  mode() {
+    console.log(this.stat.mode & 0o111);
+    return (this.stat.mode & 0o111) !== 0
+      ? Entry.EXECUTABLE_MODE
+      : Entry.REGULAR_MODE;
   }
 
   //   #name = undefined;
