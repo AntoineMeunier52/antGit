@@ -66,10 +66,9 @@ function cmdCommit() {
   });
 
   const root = Tree.build(entries);
-
-  console.log("after root tree build:", root);
   //here all is ok
   root.traverse((tree) => database.store(tree));
+
   //const tree = new Tree(entries);
   //database.store(tree);
 
@@ -88,7 +87,7 @@ function cmdCommit() {
   const author = new Author(name, email, new Date());
   const message = fs.readFileSync(0, "utf-8");
 
-  const commit = new Commit(parent, tree.oid, author, message);
+  const commit = new Commit(parent, root.oid, author, message);
   database.store(commit);
 
   refs.updateHead(commit.oid);

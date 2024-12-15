@@ -13,7 +13,6 @@ export default class Entry {
   }
 
   mode() {
-    console.log(this.stat.mode & 0o111);
     return (this.stat.mode & 0o111) !== 0
       ? Entry.EXECUTABLE_MODE
       : Entry.REGULAR_MODE;

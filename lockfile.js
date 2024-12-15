@@ -59,7 +59,6 @@ export default class Lockfile {
   }
 
   commit() {
-    console.log("lockfile commit");
     this.raiseOnStaleLock();
 
     fs.closeSync(this.lock);

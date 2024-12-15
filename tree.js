@@ -4,6 +4,8 @@ import path from "path";
 import Entry from "./entry.js";
 
 export default class Tree {
+  ENTRY_FORMAT = "Z*H40";
+
   constructor() {
     this.entries = {};
   }
@@ -25,7 +27,6 @@ export default class Tree {
     entries.forEach((entry) => {
       let pathEn = entry.name.split(path.sep);
       let name = pathEn.pop();
-      console.log("treeBuild:", pathEn, name, entry);
       root.addEntry(pathEn, name, entry);
     });
 
@@ -35,11 +36,9 @@ export default class Tree {
   addEntry(pathEn, name, entry) {
     if (pathEn.length === 0) {
       this.entries[name] = entry;
-      console.log("add entry tree if:", this.entries);
     } else {
       const tree =
         this.entries[pathEn[0]] || (this.entries[pathEn[0]] = new Tree());
-      console.log("add entry tree else:");
       tree.addEntry(pathEn.slice(1), name, entry);
     }
   }
@@ -62,18 +61,13 @@ export default class Tree {
   }
 
   toStr() {
-    this.entries.sort((a, b) => a.name.localeCompare(b.name));
+    const entriesArray = Object.entries(this.entries);
+    const getEntries = entriesArray.map(([name, entry]) => {
+      const modeAndName = `${entry.mode()} ${name}\0`;
+      const oidBuffer = Buffer.from(entry.oid, "hex");
 
-    const formattedEntries = this.entries.reduce((acc, current) => {
-      const { name, oid, stat } = current;
-      const entry = Buffer.concat([
-        Buffer.from(`${stat} ${name}\0`, "utf-8"),
-        Buffer.from(oid, "hex"),
-      ]);
-
-      return Buffer.concat([acc, entry]);
-    }, Buffer.alloc(0));
-
-    return formattedEntries;
+      return Buffer.concat([Buffer.from(modeAndName, "utf-8"), oidBuffer]);
+    });
+    return Buffer.concat(getEntries);
   }
 }
