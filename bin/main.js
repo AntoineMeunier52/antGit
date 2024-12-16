@@ -4,14 +4,15 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 
-import Workspace from "../workplace.js";
-import Database from "../database.js";
-import Blob from "../blob.js";
-import Entry from "../entry.js";
-import Tree from "../tree.js";
-import Author from "../author.js";
-import Commit from "../commit.js";
-import Refs from "../refs.js";
+import Workspace from "../lib/workplace.js";
+import Database from "../lib/database.js";
+import Blob from "../lib/database/blob.js";
+import Entry from "../lib/entry.js";
+import Tree from "../lib/database/tree.js";
+import Author from "../lib/database/author.js";
+import Commit from "../lib/database/commit.js";
+import Refs from "../lib/refs.js";
+import Index from "../lib/index.js";
 
 const command = process.argv[2];
 const argument = process.argv.slice(3);
@@ -22,6 +23,9 @@ switch (command) {
     break;
   case "commit":
     cmdCommit();
+    break;
+  case "add":
+    cmdAdd();
     break;
   default:
     throw new Error(`command not found: ${command}`);
@@ -95,4 +99,23 @@ function cmdCommit() {
   const isRoot = parent === undefined ? "(root-commit)" : "";
 
   console.log(`[${isRoot} ${commit.oid}] ${message.split("\n")[0]}`);
+}
+
+function cmdAdd() {
+  const rootPath = path.join(process.cwd());
+  const gitPath = path.join(process.cwd(), ".git");
+
+  const workspace = new Workspace(rootPath);
+  const database = new Database(path.join(gitPath, "objects"));
+  const index = new Index(path.join(gitPath, "index"));
+
+  const addFile = path.relative(rootPath, process.argv[3]);
+  const data = workspace.readFile(addFile);
+  const stat = workspace.statFile(addFile);
+
+  const blob = new Blob(data);
+  database.store(blob);
+  index.add(path, blob.oid, stat);
+
+  index.writeUpdate();
 }
